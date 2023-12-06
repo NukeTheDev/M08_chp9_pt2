@@ -22,6 +22,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
 // creating a new element in the list
 app.post("/list", async function(req, res) {
   var text = req.body.text;
@@ -34,6 +35,7 @@ app.post("/list", async function(req, res) {
     res.status(500).send(err);
   }
 });
+
 // retrieving list of elements
 app.get("/list", async function(req, res) {
   try {
@@ -43,6 +45,22 @@ app.get("/list", async function(req, res) {
     console.error(err);
     res.status(500).send(err);
   }
+});
+
+// modifying an element in the list
+app.put("/list", async function(req, res) {
+  var id = req.body.id;
+  var text = req.body.text;
+  await List.updateOne({_id:id}, {text:text}).exec();
+  // don't forget exec()!
+  res.send();  // close the connection to the browser
+});
+// remove an element from the list
+app.delete("/list", async function(req, res) {
+  var id = req.body.id;
+  console.log(req.body.id);
+  await List.deleteOne({_id:id}).exec();   // don't forget exec()!
+  res.send();  // close the connection to the browser
 });
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

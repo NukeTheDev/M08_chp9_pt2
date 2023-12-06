@@ -2,8 +2,8 @@ import Element from "./element.js";
 const GlobalApp = {
   data() {
     return {
-      elements : []  // array of object { text, _id } 
-                     // (_id = document id in MongoDB) 
+      elements : []  // array of object { text, _id }
+                     // (_id = document id in MongoDB)
     }
   },
   components : {
@@ -13,7 +13,7 @@ const GlobalApp = {
     <button @click="add()">Add Element</button>
     <ul>
       <Element v-for="(element, index) in elements" 
-      :key="index" :element="element"
+       :key="index" :element="element"
         @remove="remove($event)" @modify="modify($event)"
       />
     </ul>
@@ -21,9 +21,10 @@ const GlobalApp = {
   methods : {
     add() {
       var text = "Element " + (this.elements.length + 1);
-      axios.post("/list", {text:text})
+      axios.post("/list", {text:text})     // pass object 
+                                           // {text:text} to 
+                                           // server
       .then((response) => {
-        console.log(this.elements);
         this.elements.push({text:text, 
         _id:response.data.id});
       });
@@ -37,6 +38,9 @@ const GlobalApp = {
         if (element._id == id) return false;
         else return true;
       });
+      axios.delete("/list", { data : {id:id} });   
+            // the options must be written in the data 
+            // property
     },
     modify(params) {
       var id = params.id;
@@ -54,15 +58,17 @@ const GlobalApp = {
       // identifier
       axios.put("/list", {text:value, id:id});       
     }
+    
   },
-  created() {
-    axios.get("/list")
-    .then((response) => {
-      this.elements = response.data.elements.map(
-      function(element) {
-        return {_id : element._id, text : element.text }
+  async created() {
+    try {
+      const response = await axios.get("/list");
+      this.elements = response.data.elements.map(function (element) {
+        return { _id: element._id, text: element.text };
       });
-    });
+    } catch (err) {
+      console.error(err);
+    }
   }
 }
 export default GlobalApp;
